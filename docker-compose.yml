@@ -10,14 +10,21 @@ services:
       --bind 0.0.0.0:8000
       --workers 3
     env_file: .env
-    ports:
-      - "8000:8000"
     depends_on:
-      - postgres
-      - rabbitmq
-      - redis
+        - postgres
+        - rabbitmq
+        - redis
     volumes:
       - .:/app
+    networks:
+        - "default"
+        - "proxy"
+    environment:
+        - VIRTUAL_HOST=heyartem.ru,www.heyartem.ru
+        - LETSENCRYPT_HOST=heyartem.ru,www.heyartem.ru
+        - LETSENCRYPT_EMAIL=artem_white@mail.ru
+        - VIRTUAL_PORT=8000
+    restart: unless-stopped
 
   worker:
     build: .
@@ -27,11 +34,12 @@ services:
       celery -A django_celery_rabbitmq_docker worker -l info
     env_file: .env
     depends_on:
-      - postgres
-      - rabbitmq
-      - redis
+        - postgres
+        - rabbitmq
+        - redis
     volumes:
       - .:/app
+    restart: unless-stopped
 
   beat:
     build: .
@@ -41,11 +49,12 @@ services:
       celery -A django_celery_rabbitmq_docker beat -l info
     env_file: .env
     depends_on:
-      - postgres
-      - rabbitmq
-      - redis
+        - postgres
+        - rabbitmq
+        - redis
     volumes:
       - .:/app
+    restart: unless-stopped
 
   flower:
     image: mher/flower:1.2
@@ -57,8 +66,9 @@ services:
     ports:
       - "5555:5555"
     depends_on:
-      - rabbitmq
-      - redis
+        - rabbitmq
+        - redis
+    restart: unless-stopped
 
   postgres:
     image: postgres:14
@@ -77,6 +87,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -89,6 +100,7 @@ services:
       - "15672:15672" # Mgmt UI
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
+    restart: unless-stopped
 
   redis:
     image: redis:7
@@ -97,8 +109,13 @@ services:
       - "6379:6379"
     volumes:
       - redisdata:/data
+    restart: unless-stopped
 
 volumes:
   pgdata:
   rabbitmqdata:
   redisdata:
+
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: [proxy]
+    # ВАЖНО: прокси должен видеть Docker
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginx_certs:/etc/nginx/certs
+      - nginx_vhost:/etc/nginx/vhost.d
+      - nginx_html:/usr/share/nginx/html
+    labels:
+      com.github.nginx-proxy.nginx: "true"
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: acme-companion
+    restart: unless-stopped
+    depends_on: [nginx-proxy]
+    networks: [proxy]
+    environment:
+      # почта для Let’s Encrypt
+      - DEFAULT_EMAIL=artem_white@mail.ru
+      # явно указываем «с каким прокси я работаю»
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+    volumes:
+      # те же самые тома, что и у nginx-proxy
+      - nginx_certs:/etc/nginx/certs
+      - nginx_vhost:/etc/nginx/vhost.d
+      - nginx_html:/usr/share/nginx/html
+      # И ОБЯЗАТЕЛЬНО docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  nginx_certs:
+  nginx_vhost:
+  nginx_html:
+
+networks:
+  proxy:
+    external: true

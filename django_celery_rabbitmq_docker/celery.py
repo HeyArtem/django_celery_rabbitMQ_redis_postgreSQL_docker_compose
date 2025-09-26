@@ -20,7 +20,7 @@ app.conf.timezone = "Europe/Moscow"
 app.conf.enable_utc = False
 
 
-# Эта функция полезна для отладки
+# Эта функция полезна для   отладки
 @app.task(bind=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")

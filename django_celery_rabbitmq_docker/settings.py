@@ -13,7 +13,9 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # For Docker
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "heyartem.ru,www.heyartem.ru").split(
+    ","
+)
 
 # Application definition
 
@@ -146,6 +148,14 @@ os.environ["LC_ALL"] = "en_US.UTF-8"
 
 # CSRF_TRUSTED_ORIGINS (для админки по http)
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
+    "https://heyartem.ru",
+    "https://www.heyartem.ru",
 ]
+
+# За прокси: говорить Django, что HTTPS пришёл через X-Forwarded-Proto
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+# (Рекомендовано в проде)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
