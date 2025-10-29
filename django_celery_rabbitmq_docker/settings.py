@@ -3,12 +3,30 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-key-if-empty")
 DEBUG = os.getenv("DEBUG", "").lower() in ["1", "true", "yes"]
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+# ── EMAIL (из .env), без хардкода в коде ───────────────────────────────────
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+
+# В .env указываем один вариант: 587→TLS, 465→SSL
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "").lower() in ("1", "true", "yes")
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "").lower() in ("1", "true", "yes")
+if EMAIL_USE_SSL:
+    EMAIL_USE_TLS = False
+
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,6 +38,7 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "heyartem.ru,www.heyartem.ru")
 # Application definition
 
 INSTALLED_APPS = [
+    "django_prometheus",  # Подключаю prometheus
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -31,6 +50,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Подключаю prometheus
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Для collectstatic (стили в Docker) <— сразу после SecurityMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -39,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",  # Подключаю prometheus
 ]
 
 ROOT_URLCONF = "django_celery_rabbitmq_docker.urls"
@@ -59,11 +80,12 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "django_celery_rabbitmq_docker.wsgi.application"
+WSGI_APPLICATION = "django_celery_rabbitmq_docker.:wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.postgresql"),
+        "ENGINE": "django_prometheus.db.backends.postgresql",  # Подключаю prometheus
+        # "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.postgresql"),
         "NAME": os.getenv("DB_NAME", ""),
         "USER": os.getenv("DB_USER", ""),
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
@@ -100,14 +122,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"  # Для collectstatic (стили в Do
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # пока тестируем письма будут выводиться в терминал
-
-EMAIL_HOST = "smtp.example.com"  # заменить на реальный smtp
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Бэкэнд для хранения результатов

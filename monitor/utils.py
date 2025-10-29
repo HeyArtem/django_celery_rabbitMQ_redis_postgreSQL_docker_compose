@@ -1,6 +1,7 @@
 import asyncio
 
 import httpx
+from django.conf import settings
 from django.core.mail import send_mail
 
 
@@ -26,8 +27,8 @@ def send_summary_email(results):
     send_mail(
         subject,
         message,
-        from_email=None,  # использует DEFAULT_FROM_EMAIL
-        recipient_list=["temka@example.com"],
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[settings.EMAIL_HOST_USER],
     )
 
 
