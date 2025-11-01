@@ -18,7 +18,7 @@ Django‑сервис, который по расписанию проверяе
 
 ---
 
-![banner cAdvisor](docs/b cAdvisor.png)
+![banner cAdvisor](docs/b_cAdvisor.png)
 
 ## 📋 Описание
 Сервис хранит список сайтов, периодически (beat) отдаёт их на проверку воркерам (worker). <br>
@@ -30,7 +30,7 @@ Django‑сервис, который по расписанию проверяе
  - Website(url) — наблюдаемый сайт
  - Check(website, status_code, response_time_ms, is_online, created_at) — результат проверки
 ---
-![banner celery_flower](docs/b celery_flower.png)
+![banner celery_flower](docs/b_celery_flower.png)
 
 ## 🗂 Структура
 ```python
@@ -65,7 +65,7 @@ Django‑сервис, который по расписанию проверяе
 ├── requirements.txt
 ```
 
-![banner Prometheus](docs/b Prometheus.png)
+![banner Prometheus](docs/b_Prometheus.png)
 ---
 
 ## ⚙️ Особенности
@@ -76,7 +76,7 @@ Django‑сервис, который по расписанию проверяе
 
 ---
 
-![banner](docs/b Prometheus2.png)
+![banner](docs/b_Prometheus2.png)
 
 ---
 ## 👽 UI:
@@ -112,8 +112,8 @@ Django‑сервис, который по расписанию проверяе
 ```
 
 
-![banner](docs/b RabbitMQ.png)
+![banner](docs/b_RabbitMQ.png)
 
 <hr>
 
-![banner](docs/b django.png)
+![banner](docs/b_django.png)
